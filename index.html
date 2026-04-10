@@ -303,21 +303,23 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-analytics.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
         // YOUR_CONFIG_HERE
         const firebaseConfig = {
             apiKey: "AIzaSyC_WP01QJ8Zrhj5bI3Ba_z9A9FM3pmsvkY",
-        authDomain: "english-quizgame.firebaseapp.com",
-        projectId: "english-quizgame",
-        storageBucket: "english-quizgame.firebasestorage.app",
-        messagingSenderId: "925101075346",
-        appId: "1:925101075346:web:5c8bbb4812eca838322f4b",
-        measurementId: "G-PGM7X612Z5"
+            authDomain: "english-quizgame.firebaseapp.com",
+            projectId: "english-quizgame",
+            storageBucket: "english-quizgame.firebasestorage.app",
+            messagingSenderId: "925101075346",
+            appId: "1:925101075346:web:5c8bbb4812eca838322f4b",
+            measurementId: "G-PGM7X612Z5"
         };
 
         const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
         const analytics = getAnalytics(app);
 
         const questions = [
