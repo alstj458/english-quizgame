@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Word Quiz</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --correct: #22c55e;
+            --incorrect: #ef4444;
+            --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            letter-spacing: -0.025em;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Start Screen */
+        .start-screen p {
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Quiz Screen */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-box {
+            margin-bottom: 2rem;
+        }
+
+        .question-word {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .option-btn {
+            background: #f1f5f9;
+            border: 2px solid transparent;
+            padding: 1rem;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: var(--primary);
+        }
+
+        .option-btn.correct {
+            background: var(--correct);
+            color: white;
+            border-color: var(--correct);
+        }
+
+        .option-btn.incorrect {
+            background: var(--incorrect);
+            color: white;
+            border-color: var(--incorrect);
+        }
+
+        /* Result Screen */
+        .result-score {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin: 1.5rem 0;
+        }
+
+        .input-group {
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        /* Ranking Screen */
+        .ranking-list {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-weight: 500;
+        }
+
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+
+        .ranking-item .rank {
+            font-weight: 800;
+            color: var(--primary);
+            margin-right: 1rem;
+        }
+
+        .ranking-item .name {
+            flex-grow: 1;
+        }
+
+        .ranking-item .score {
+            font-weight: 700;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text);
+            margin-top: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Word Quiz</h1>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div class="start-screen">
+                <p>10개의 영어 단어 퀴즈에 도전하세요!<br>최고 점수를 기록하고 랭킹에 이름을 올려보세요.</p>
+                <button class="btn" onclick="game.start()">게임 시작</button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-header">
+                <span id="progress-text">문제 1/10</span>
+                <span id="score-text">점수: 0</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <div class="question-box">
+                <div id="question-word" class="question-word">Apple</div>
+                <p style="color: var(--text-muted)">위 단어의 뜻은 무엇일까요?</p>
+            </div>
+            <div id="options-grid" class="options-grid">
+                <!-- Options will be injected here -->
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen">
+            <h2>퀴즈 완료!</h2>
+            <div id="final-score" class="result-score">0</div>
+            <p>수고하셨습니다!</p>
+            <div class="input-group">
+                <label for="nickname">닉네임 입력</label>
+                <input type="text" id="nickname" placeholder="닉네임을 입력하세요 (최대 10자)" maxlength="10">
+            </div>
+            <button id="save-btn" class="btn" onclick="game.saveScore()">점수 저장하기</button>
+            <button class="btn btn-secondary" onclick="game.showRanking()">랭킹 보기</button>
+        </div>
+
+        <!-- Ranking Screen -->
+        <div id="ranking-screen" class="screen">
+            <h2>Top 5 랭킹</h2>
+            <div id="ranking-list" class="ranking-list">
+                <!-- Ranking items will be injected here -->
+                <p style="text-align: center; color: var(--text-muted);">불러오는 중...</p>
+            </div>
+            <button class="btn" onclick="location.reload()">다시 하기</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-analytics.js";
+
+        // YOUR_CONFIG_HERE
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_WP01QJ8Zrhj5bI3Ba_z9A9FM3pmsvkY",
+        authDomain: "english-quizgame.firebaseapp.com",
+        projectId: "english-quizgame",
+        storageBucket: "english-quizgame.firebasestorage.app",
+        messagingSenderId: "925101075346",
+        appId: "1:925101075346:web:5c8bbb4812eca838322f4b",
+        measurementId: "G-PGM7X612Z5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+
+        const questions = [
+            { word: "Challenge", options: ["도전", "기회", "성공", "실패"], answer: 0 },
+            { word: "Incredible", options: ["평범한", "놀라운", "지루한", "위험한"], answer: 1 },
+            { word: "Opportunity", options: ["결과", "목표", "기회", "계획"], answer: 2 },
+            { word: "Magnificent", options: ["작은", "웅장한", "조용한", "빠른"], answer: 1 },
+            { word: "Persistent", options: ["끈기 있는", "나약한", "무관심한", "성급한"], answer: 0 },
+            { word: "Vibrant", options: ["어두운", "조용한", "활기찬", "차가운"], answer: 2 },
+            { word: "Essential", options: ["불필요한", "선택적인", "필수적인", "사소한"], answer: 2 },
+            { word: "Generous", options: ["인색한", "관대한", "엄격한", "이기적인"], answer: 1 },
+            { word: "Ambitious", options: ["야심 있는", "게으른", "만족하는", "두려운"], answer: 0 },
+            { word: "Prosperity", options: ["빈곤", "번영", "갈등", "평화"], answer: 1 }
+        ];
+
+        class Game {
+            constructor() {
+                this.currentQuestionIndex = 0;
+                this.score = 0;
+                this.isAnswered = false;
+            }
+
+            start() {
+                this.showScreen('quiz-screen');
+                this.loadQuestion();
+            }
+
+            loadQuestion() {
+                this.isAnswered = false;
+                const q = questions[this.currentQuestionIndex];
+                document.getElementById('question-word').textContent = q.word;
+                document.getElementById('progress-text').textContent = `문제 ${this.currentQuestionIndex + 1}/${questions.length}`;
+                document.getElementById('progress-fill').style.width = `${((this.currentQuestionIndex + 1) / questions.length) * 100}%`;
+                document.getElementById('score-text').textContent = `점수: ${this.score}`;
+
+                const optionsGrid = document.getElementById('options-grid');
+                optionsGrid.innerHTML = '';
+                q.options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = option;
+                    btn.onclick = () => this.checkAnswer(index, btn);
+                    optionsGrid.appendChild(btn);
+                });
+            }
+
+            checkAnswer(selectedIndex, btn) {
+                if (this.isAnswered) return;
+                this.isAnswered = true;
+
+                const q = questions[this.currentQuestionIndex];
+                const allBtns = document.querySelectorAll('.option-btn');
+
+                if (selectedIndex === q.answer) {
+                    btn.classList.add('correct');
+                    this.score += 10;
+                    document.getElementById('score-text').textContent = `점수: ${this.score}`;
+                } else {
+                    btn.classList.add('incorrect');
+                    allBtns[q.answer].classList.add('correct');
+                }
+
+                setTimeout(() => {
+                    this.currentQuestionIndex++;
+                    if (this.currentQuestionIndex < questions.length) {
+                        this.loadQuestion();
+                    } else {
+                        this.showResult();
+                    }
+                }, 1500);
+            }
+
+            showResult() {
+                this.showScreen('result-screen');
+                document.getElementById('final-score').textContent = this.score;
+            }
+
+            async saveScore() {
+                const nickname = document.getElementById('nickname').value.trim();
+                if (!nickname) {
+                    alert('닉네임을 입력해주세요!');
+                    return;
+                }
+
+                const saveBtn = document.getElementById('save-btn');
+                saveBtn.disabled = true;
+                saveBtn.textContent = '저장 중...';
+
+                try {
+                    await addDoc(collection(db, "scores"), {
+                        nickname: nickname,
+                        score: this.score,
+                        timestamp: serverTimestamp()
+                    });
+                    this.showRanking();
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    alert('점수 저장에 실패했습니다. Firebase 설정을 확인해주세요.');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = '점수 저장하기';
+                }
+            }
+
+            async showRanking() {
+                this.showScreen('ranking-screen');
+                const rankingList = document.getElementById('ranking-list');
+                rankingList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">불러오는 중...</p>';
+
+                try {
+                    const q = query(collection(db, "scores"), orderBy("score", "desc"), limit(5));
+                    const querySnapshot = await getDocs(q);
+                    
+                    rankingList.innerHTML = '';
+                    let rank = 1;
+                    
+                    if (querySnapshot.empty) {
+                        rankingList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">아직 기록이 없습니다.</p>';
+                        return;
+                    }
+
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const item = document.createElement('div');
+                        item.className = 'ranking-item';
+                        item.innerHTML = `
+                            <span class="rank">${rank++}위</span>
+                            <span class="name">${this.escapeHtml(data.nickname)}</span>
+                            <span class="score">${data.score}점</span>
+                        `;
+                        rankingList.appendChild(item);
+                    });
+                } catch (e) {
+                    console.error("Error getting documents: ", e);
+                    rankingList.innerHTML = '<p style="text-align: center; color: var(--incorrect);">랭킹을 불러오지 못했습니다.</p>';
+                }
+            }
+
+            showScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(screenId).classList.add('active');
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        window.game = new Game();
+    </script>
+</body>
+</html>
